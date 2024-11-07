@@ -25,4 +25,16 @@ public abstract class VPEGame : Game
     {
         return SpriteBatch;
     }
+    
+    public void SetWindowSize(int width, int height)
+    {
+        Graphics.PreferredBackBufferWidth = width;
+        Graphics.PreferredBackBufferHeight = height;
+        Graphics.ApplyChanges();
+    }
+
+    public void SetWindowPosition(int x, int y)
+    {
+        Window.Position = new Point(x, y);
+    }
 }

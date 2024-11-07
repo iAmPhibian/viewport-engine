@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using ViewportEngine.SceneManagement;
+using ViewportEngine.Util;
 
 namespace ViewportEngine;
 
@@ -14,59 +15,22 @@ public class Transform(Scene scene) : Node(scene)
     public Vector2 LocalScale = Vector2.One;
     
     // Global
-    public Vector2 GlobalPosition { get; private set; }
-    public float GlobalRotation { get; private set; }
-    public Vector2 GlobalScale { get; private set; }
+    private Matrix3x3 LocalMatrix
+    {
+        get
+        {
+            var translationMatrix = Matrix3x3.CreateTranslation(LocalPosition.X, LocalPosition.Y);
+            var rotationMatrix = Matrix3x3.CreateRotation(LocalRotation);
+            var scaleMatrix = Matrix3x3.CreateScale(LocalScale.X, LocalScale.Y);
+            return translationMatrix * rotationMatrix * scaleMatrix;
+        }
+    }
+
+    private Matrix3x3 GlobalMatrix => Parent.Parent == null ? LocalMatrix : Parent.Parent.Transform.GlobalMatrix * LocalMatrix;
+
+    public Vector2 GlobalPosition => GlobalMatrix.Apply(Vector2.Zero);
+    public float GlobalRotation => Parent.Parent == null ? LocalRotation : Parent.Parent.Transform.GlobalRotation + LocalRotation;
+    public Vector2 GlobalScale => Parent.Parent == null ? LocalScale : Parent.Parent.Transform.GlobalScale * LocalScale;
 
     public const string TRANSFORM_NAME = "Transform";
-
-    internal void UpdateGlobalTransform()
-    {
-        if (Parent.Parent == null)
-        {
-            GlobalPosition = LocalPosition;
-            GlobalRotation = LocalRotation;
-            GlobalScale = LocalScale;
-        }
-        else
-        {
-            GlobalPosition = Parent.Parent.Transform.GlobalPosition + LocalPosition;
-            GlobalRotation = Parent.Parent.Transform.GlobalRotation + LocalRotation;
-            GlobalScale = Parent.Parent.Transform.GlobalScale * LocalScale;
-        }
-        
-        foreach (var child in Parent)
-        {
-            child.Transform.UpdateGlobalTransform();
-        }
-    }
-
-    
-    
-    /// <summary>
-    /// Overrides the automatically calculated <seealso cref="GlobalPosition"/> of this Transform.
-    /// </summary>
-    /// <param name="position"></param>
-    public void SetGlobalPosition(Vector2 position)
-    {
-        this.GlobalPosition = position;
-    }
-    
-    /// <summary>
-    /// Overrides the automatically calculated <seealso cref="GlobalRotation"/> of this Transform.
-    /// </summary>
-    /// <param name="rotation"></param>
-    public void SetGlobalRotation(float rotation)
-    {
-        this.GlobalRotation = rotation;
-    }
-    
-    /// <summary>
-    /// Overrides the automatically calculated <seealso cref="GlobalScale"/> of this Transform.
-    /// </summary>
-    /// <param name="scale"></param>
-    public void SetGlobalScale(Vector2 scale)
-    {
-        this.GlobalScale = scale;
-    }
 }

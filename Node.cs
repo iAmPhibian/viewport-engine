@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ViewportEngine.SceneManagement;
@@ -20,17 +21,12 @@ public class Node : IEnumerable<Node>
     public string SceneName => Parent != null ? Parent.SceneName + HIERARCHY_SEPARATOR + Name : Name;
 
     private readonly Dictionary<Guid, Node> _children;
+    public int ChildCount => _children.Count;
     
     /// <summary>
     /// Globally unique node id.
     /// </summary>
     public Guid Id { get; private init; }
-    
-    
-    /// <summary>
-    /// Invoked when the object is destroyed.
-    /// </summary>
-    public event Action OnDestruct;
 
     private const string DEFAULT_NAME = "Node";
     private const char HIERARCHY_SEPARATOR = '.';
@@ -75,9 +71,9 @@ public class Node : IEnumerable<Node>
         Parent = newParent ?? Scene.Root;
     }
 
-    public void OnDestroyed()
+    public virtual void OnDestroyed()
     {
-        OnDestruct?.Invoke();
+        Parent?.RemoveChild(this);
     }
     
     /// <summary>
@@ -100,7 +96,13 @@ public class Node : IEnumerable<Node>
     /// Called when initialization is complete and the scene is starting.
     /// </summary>
     /// <param name="services"></param>
-    public virtual void Start(GameServiceContainer services) { }
+    public virtual void Start(GameServiceContainer services)
+    {
+        foreach (var child in this)
+        {
+            child.Start(services);
+        }
+    }
     
     /// <summary>
     /// Called when the GameObject is drawn.
@@ -109,7 +111,7 @@ public class Node : IEnumerable<Node>
     /// <param name="spriteBatch"></param>
     public virtual void Draw(GameServiceContainer services, SpriteBatch spriteBatch)
     {
-        foreach (var child in _children.Values)
+        foreach (var child in this)
         {
             child.Draw(services, spriteBatch);
         }
@@ -122,7 +124,7 @@ public class Node : IEnumerable<Node>
     /// <param name="gameTime"></param>
     public virtual void Update(GameServiceContainer services, GameTime gameTime)
     {
-        foreach (var child in _children.Values)
+        foreach (var child in this)
         {
             child.Update(services, gameTime);
         }
@@ -136,5 +138,37 @@ public class Node : IEnumerable<Node>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return ((IEnumerable)_children.Values).GetEnumerator();
+    }
+
+    public override string ToString()
+    {
+        return $"({GetType().ToString()}) {SceneName}";
+    }
+
+    /// <summary>
+    /// Prints the tree structure of this Node and its children.
+    /// </summary>
+    public void PrintNode()
+    {
+        this.PrintNode(string.Empty, true);
+    }
+    
+    private void PrintNode(string indent, bool isLast)
+    {
+        // Print the current node with the appropriate indent
+        Console.Write(indent);
+        Console.Write(isLast ? "└─ " : "├─ ");
+        Console.WriteLine(ToString());
+
+        // Increase the indent for children nodes
+        indent += isLast ? "   " : "│  ";
+
+        // Print each child node recursively
+        var i = 0;
+        foreach (var child in this)
+        {
+            child.PrintNode(indent, i == child.ChildCount - 1);
+            i++;
+        }
     }
 }

@@ -38,5 +38,6 @@ public class SceneManager(Scene defaultScene, int defaultWidth, int defaultHeigh
         CurrentScene?.UnloadContent(services);
         CurrentScene = scene;
         scene.LoadContent(services, Content);
+        scene.Start(services);
     }
 }

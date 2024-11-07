@@ -12,7 +12,6 @@ public abstract class Scene
 {
     public Node Root { get; }
     protected ContentManager _content;
-    private readonly Dictionary<Guid, Node> _managedNodes = [];
     
     private const string SCENE_DIRECTORY = "Content/Scenes";
 
@@ -48,10 +47,6 @@ public abstract class Scene
         
         // Non-transform nodes only:
         CreateTransformFor(newNode);
-        if (parent == Root)
-        {
-            _managedNodes.Add(newNode.Id, newNode);
-        }
         parent.AddChildReference(newNode);
         
         return newNode;
@@ -71,7 +66,6 @@ public abstract class Scene
             throw new DestroyedTransformException();
         }
 
-        _managedNodes.Remove(node.Id);
         node.OnDestroyed();
     }
 
@@ -94,6 +88,12 @@ public abstract class Scene
         _content.Unload();
     }
 
+    public virtual void Start(GameServiceContainer services)
+    {
+        Root.Start(services);
+        Console.WriteLine(ToString());
+    }
+
     /// <summary>
     /// Updates the scene every frame.
     /// </summary>
@@ -102,7 +102,6 @@ public abstract class Scene
     public virtual void Update(GameServiceContainer services, GameTime gameTime)
     {
         // Update scene object loop
-        Root.Transform.UpdateGlobalTransform();
         Root.Update(services, gameTime);
     }
 
@@ -116,24 +115,5 @@ public abstract class Scene
     protected void RenderGameObjects(GameServiceContainer services, SpriteBatch spriteBatch)
     {
         Root.Draw(services, spriteBatch);
-    }
-
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-        sb.Append('[');
-        var i = 0;
-        foreach (var pair in _managedNodes)
-        {
-            sb.Append(pair.Value.SceneName);
-            if (i < _managedNodes.Count - 1)
-            {
-                sb.Append(", ");
-            }
-            i++;
-        }
-
-        sb.Append(']');
-        return sb.ToString();
     }
 }

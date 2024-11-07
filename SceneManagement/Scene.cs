@@ -10,7 +10,7 @@ namespace ViewportEngine.SceneManagement;
 
 public abstract class Scene
 {
-    private readonly Node _rootNode;
+    public Node Root { get; }
     protected ContentManager _content;
     private readonly Dictionary<Guid, Node> _managedNodes = [];
     
@@ -18,11 +18,11 @@ public abstract class Scene
 
     protected Scene()
     {
-        _rootNode = new Node(this)
+        Root = new Node(this)
         {
             Name = "Root"
         };
-        CreateTransformFor(_rootNode);
+        CreateTransformFor(Root);
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public abstract class Scene
     /// <returns></returns>
     public T Instantiate<T>(Node parent = null) where T : Node
     {
-        parent ??= _rootNode;
+        parent ??= Root;
 
         var newNode = (T)Activator.CreateInstance(typeof(T), parent.Scene);
         if (newNode == null)
@@ -43,15 +43,17 @@ public abstract class Scene
         }
         
         newNode.SetParent(parent);
-        if (typeof(T) != typeof(Transform))
+        
+        if (typeof(T) == typeof(Transform)) return newNode;
+        
+        // Non-transform nodes only:
+        CreateTransformFor(newNode);
+        if (parent == Root)
         {
-            CreateTransformFor(newNode);
-            if (parent == _rootNode)
-            {
-                _managedNodes.Add(newNode.Id, newNode);
-            }
+            _managedNodes.Add(newNode.Id, newNode);
         }
-        parent.AddChild(newNode);
+        parent.AddChildReference(newNode);
+        
         return newNode;
     }
 
@@ -68,6 +70,7 @@ public abstract class Scene
         {
             throw new DestroyedTransformException();
         }
+
         _managedNodes.Remove(node.Id);
         node.OnDestroyed();
     }
@@ -99,11 +102,8 @@ public abstract class Scene
     public virtual void Update(GameServiceContainer services, GameTime gameTime)
     {
         // Update scene object loop
-        _rootNode.UpdateGlobalTransform();
-        foreach (var keyPair in _managedNodes)
-        {
-            keyPair.Value.Update(services, gameTime);
-        }
+        Root.Transform.UpdateGlobalTransform();
+        Root.Update(services, gameTime);
     }
 
     /// <summary>
@@ -115,10 +115,7 @@ public abstract class Scene
 
     protected void RenderGameObjects(GameServiceContainer services, SpriteBatch spriteBatch)
     {
-        foreach (var keyPair in _managedNodes)
-        {
-            keyPair.Value.Draw(services, spriteBatch);
-        }
+        Root.Draw(services, spriteBatch);
     }
 
     public override string ToString()

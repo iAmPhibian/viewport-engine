@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
@@ -10,7 +11,7 @@ namespace ViewportEngine;
 /// <summary>
 /// The base class for all objects in the game scene.
 /// </summary>
-public class Node
+public class Node : IEnumerable<Node>
 {
     public Scene Scene { get; private init; }
     public Node Parent { get; private set; }
@@ -18,7 +19,7 @@ public class Node
     public string Name { get; set; }
     public string SceneName => Parent != null ? Parent.SceneName + HIERARCHY_SEPARATOR + Name : Name;
 
-    private Dictionary<Guid, Node> _children;
+    private readonly Dictionary<Guid, Node> _children;
     
     /// <summary>
     /// Globally unique node id.
@@ -45,7 +46,7 @@ public class Node
         _children = new Dictionary<Guid, Node>();
     }
 
-    internal void AddChild(Node child)
+    internal void AddChildReference(Node child)
     {
         _children.Add(child.Id, child);
     }
@@ -57,6 +58,7 @@ public class Node
     public void RemoveChild(Node child)
     {
         _children.Remove(child.Id);
+        child.SetParent(null);
     }
     
     /// <summary>
@@ -65,7 +67,8 @@ public class Node
     /// <param name="newParent"></param>
     public void SetParent(Node newParent)
     {
-        Parent = newParent;
+        Parent?.RemoveChild(this);
+        Parent = newParent ?? Scene.Root;
     }
 
     public void OnDestroyed()
@@ -84,6 +87,12 @@ public class Node
 
     public T AddChild<T>(string name) where T : Node => this.Instantiate<T>(name, this);
 
+    /// <summary>
+    /// Called when initialization is complete and the scene is starting.
+    /// </summary>
+    /// <param name="services"></param>
+    public virtual void Start(GameServiceContainer services) { }
+    
     /// <summary>
     /// Called when the GameObject is drawn.
     /// </summary>
@@ -110,20 +119,13 @@ public class Node
         }
     }
 
-    internal virtual void UpdateGlobalTransform()
+    public IEnumerator<Node> GetEnumerator()
     {
-        if (Parent == null)
-        {
-            Transform.GlobalPosition = Transform.LocalPosition;
-        }
-        else
-        {
-            Transform.GlobalPosition = Parent.Transform.GlobalPosition + Transform.LocalPosition;
-        }
-        
-        foreach (var child in _children.Values)
-        {
-            child.UpdateGlobalTransform();
-        }
+        return _children.Values.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable)_children.Values).GetEnumerator();
     }
 }

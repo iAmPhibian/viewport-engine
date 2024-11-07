@@ -36,7 +36,11 @@ public class Node : IEnumerable<Node>
     private const char HIERARCHY_SEPARATOR = '.';
     
     /// <summary>
-    /// Constructor of Node should only be used during Scene.Instantiate().
+    /// <p>Constructor of Node should only be called during <see cref="Scene.Instantiate"/>.</p>
+    /// <ul>
+    /// <li>Override this to set up child node hierarchy and initialize fields.</li>
+    /// <li>Code which is dependent on the node hierarchy should be executed in <see cref="Start"/>.</li>
+    /// </ul>
     /// </summary>
     public Node(Scene scene)
     {
@@ -83,7 +87,12 @@ public class Node : IEnumerable<Node>
     /// <param name="parent"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public T Instantiate<T>(string name, Node parent = null) where T : Node => Scene?.Instantiate<T>(parent);
+    public T Instantiate<T>(string name, Node parent = null) where T : Node
+    {
+        var newNode = Scene.Instantiate<T>(parent);
+        newNode.Name = name;
+        return newNode;
+    }
 
     public T AddChild<T>(string name) where T : Node => this.Instantiate<T>(name, this);
 

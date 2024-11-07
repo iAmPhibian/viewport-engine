@@ -7,7 +7,7 @@ namespace ViewportEngine;
 /// <summary>
 /// A basic class containing position, rotation, and scale data.
 /// </summary>
-public class Transform(Scene scene) : Node(scene)
+public class Transform(GameServiceContainer services, Scene scene) : Node(services, scene)
 {
     // Local
     public Vector2 LocalPosition = Vector2.Zero;

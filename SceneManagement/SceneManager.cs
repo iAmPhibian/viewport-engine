@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ViewportEngine.SceneManagement;
 
-public class SceneManager(Scene defaultScene, int defaultWidth, int defaultHeight) : ISceneManager
+public class SceneManager(GameServiceContainer services, Scene defaultScene, int defaultWidth, int defaultHeight) : ISceneManager
 {
     // Interface
     public ContentManager Content { get; private set; }
@@ -12,32 +12,34 @@ public class SceneManager(Scene defaultScene, int defaultWidth, int defaultHeigh
     public Vector2 Dimensions { get; private set; } = new(defaultWidth, defaultHeight);
     public Scene CurrentScene { get; private set; }
 
-    public void LoadContent(GameServiceContainer services, ContentManager content)
+    private GameServiceContainer Services { get; } = services;
+
+    public void LoadContent(ContentManager content)
     {
         this.Content = new ContentManager(content.ServiceProvider, "Content");
-        LoadScene(services, defaultScene);
+        LoadScene(defaultScene);
     }
 
-    public void UnloadContent(GameServiceContainer services)
+    public void UnloadContent()
     {
-        CurrentScene.UnloadContent(services);
+        CurrentScene.UnloadContent();
     }
 
-    public void Update(GameServiceContainer services, GameTime gameTime)
+    public void Update(GameTime gameTime)
     {
-        CurrentScene.Update(services, gameTime);
+        CurrentScene.Update(gameTime);
     }
 
-    public void Draw(GameServiceContainer services, SpriteBatch spriteBatch)
+    public void Draw()
     {
-        CurrentScene.Draw(services, spriteBatch);
+        CurrentScene.Draw();
     }
     
-    public void LoadScene(GameServiceContainer services, Scene scene)
+    public void LoadScene(Scene scene)
     {
-        CurrentScene?.UnloadContent(services);
+        CurrentScene?.UnloadContent();
         CurrentScene = scene;
-        scene.LoadContent(services, Content);
-        scene.Start(services);
+        scene.LoadContent(Content);
+        scene.Start();
     }
 }

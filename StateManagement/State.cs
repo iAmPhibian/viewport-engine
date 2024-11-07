@@ -6,38 +6,35 @@ namespace ViewportEngine.StateManagement;
 /// <summary>
 /// Represents a switchable state
 /// </summary>
-public abstract class State(string name) : IState
+public abstract class State(GameServiceContainer services, string name) : IState
 {
     public string Name { get; } = name;
-    private bool _active;
+    public bool IsActive { get; private set; }
     
     public event Action OnEnter;
     public event Action OnUpdate;
     public event Action OnExit;
 
+    private GameServiceContainer _services = services;
+
     public override string ToString()
     {
-        return $"({Name}, {IsActive()})";
+        return $"(State \"{Name}\", {IsActive})";
     }
     
     public void SetActive(bool active)
     {
         switch (active)
         {
-            case true when !IsActive():
-                _active = true;
+            case true when !IsActive:
+                IsActive = true;
                 Enter();
                 break;
-            case false when IsActive():
-                _active = false;
+            case false when IsActive:
+                IsActive = false;
                 Exit();
                 break;
         }
-    }
-
-    public bool IsActive()
-    {
-        return _active;
     }
 
     public virtual void InitGame()

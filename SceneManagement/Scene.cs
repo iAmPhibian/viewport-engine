@@ -11,13 +11,15 @@ namespace ViewportEngine.SceneManagement;
 public abstract class Scene
 {
     public Node Root { get; }
+    public GameServiceContainer Services { get; }
     protected ContentManager _content;
     
     private const string SCENE_DIRECTORY = "Content/Scenes";
 
-    protected Scene()
+    protected Scene(GameServiceContainer services)
     {
-        Root = new Node(this)
+        Services = services;
+        Root = new Node(services, this)
         {
             Name = "Root"
         };
@@ -35,7 +37,7 @@ public abstract class Scene
     {
         parent ??= Root;
 
-        var newNode = (T)Activator.CreateInstance(typeof(T), parent.Scene);
+        var newNode = (T)Activator.CreateInstance(typeof(T), Services, parent.Scene);
         if (newNode == null)
         {
             throw new Exception($"Activator cannot create instance of type {typeof(T)}");
@@ -72,9 +74,8 @@ public abstract class Scene
     /// <summary>
     /// Loads the content within the scene.
     /// </summary>
-    /// <param name="services"></param>
     /// <param name="content"></param>
-    public virtual void LoadContent(GameServiceContainer services, ContentManager content)
+    public virtual void LoadContent(ContentManager content)
     {
         _content = new ContentManager(content.ServiceProvider, SCENE_DIRECTORY);
     }
@@ -82,38 +83,34 @@ public abstract class Scene
     /// <summary>
     /// Unloads the content within the scene.
     /// </summary>
-    /// <param name="services"></param>
-    public virtual void UnloadContent(GameServiceContainer services)
+    public virtual void UnloadContent()
     {
         _content.Unload();
     }
 
-    public virtual void Start(GameServiceContainer services)
+    public virtual void Start()
     {
-        Root.Start(services);
+        Root.Start();
         Console.WriteLine(ToString());
     }
 
     /// <summary>
     /// Updates the scene every frame.
     /// </summary>
-    /// <param name="services"></param>
     /// <param name="gameTime"></param>
-    public virtual void Update(GameServiceContainer services, GameTime gameTime)
+    public virtual void Update(GameTime gameTime)
     {
         // Update scene object loop
-        Root.Update(services, gameTime);
+        Root.Update(gameTime);
     }
 
     /// <summary>
-    /// Used for drawing content to the <paramref name="spriteBatch"/>.
+    /// Used for drawing content to the screen.
     /// </summary>
-    /// <param name="services"></param>
-    /// <param name="spriteBatch"></param>
-    public abstract void Draw(GameServiceContainer services, SpriteBatch spriteBatch);
+    public abstract void Draw();
 
-    protected void RenderGameObjects(GameServiceContainer services, SpriteBatch spriteBatch)
+    protected void RenderGameObjects()
     {
-        Root.Draw(services, spriteBatch);
+        Root.Draw();
     }
 }

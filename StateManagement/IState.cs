@@ -11,6 +11,12 @@ public interface IState
     public string Name { get; }
     
     /// <summary>
+    /// Returns whether this state is active.
+    /// </summary>
+    /// <returns></returns>
+    public bool IsActive { get; }
+    
+    /// <summary>
     /// Sets up the state for future usage.
     /// </summary>
     public void InitGame();
@@ -20,12 +26,6 @@ public interface IState
     /// </summary>
     /// <param name="active"></param>
     public void SetActive(bool active);
-
-    /// <summary>
-    /// Returns whether this state is active.
-    /// </summary>
-    /// <returns></returns>
-    public bool IsActive();
     
     /// <summary>
     /// Called when the state is entered.
@@ -33,8 +33,9 @@ public interface IState
     public void Enter();
         
     /// <summary>
-    /// Called every frame while the state is active
+    /// Called every frame while the state is active.
     /// </summary>
+    /// <param name="gameTime"></param>
     public void Update(GameTime gameTime);
         
     /// <summary>

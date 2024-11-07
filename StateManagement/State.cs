@@ -15,7 +15,7 @@ public abstract class State(GameServiceContainer services, string name) : IState
     public event Action OnUpdate;
     public event Action OnExit;
 
-    private GameServiceContainer _services = services;
+    protected GameServiceContainer Services { get; private set; } = services;
 
     public override string ToString()
     {

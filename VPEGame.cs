@@ -1,13 +1,18 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ViewportEngine.Util;
 
 namespace ViewportEngine;
 
-public abstract class VPEGame : Game
+public abstract class VPEGame : Game, IWindowHandler
 {
     protected GraphicsDeviceManager Graphics { get; private set; }
     protected SpriteBatch SpriteBatch { get; private set; }
-    
+
+    public int Width => Graphics.PreferredBackBufferWidth;
+    public int Height => Graphics.PreferredBackBufferHeight;
+    public Point Position => Window.Position;
+
     protected VPEGame()
     {
         Graphics = new GraphicsDeviceManager(this);
@@ -25,7 +30,7 @@ public abstract class VPEGame : Game
     {
         return SpriteBatch;
     }
-    
+
     public void SetWindowSize(int width, int height)
     {
         Graphics.PreferredBackBufferWidth = width;

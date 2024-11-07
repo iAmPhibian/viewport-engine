@@ -8,7 +8,7 @@ namespace ViewportEngine.Drawing;
 /// <summary>
 /// Displays a <see cref="Texture2D"/> at a <see cref="Transform"/>.
 /// </summary>
-public class Image(Scene scene) : Node(scene)
+public class Image(GameServiceContainer services, Scene scene) : Node(services, scene)
 {
     public Color Color = Color.White;
     public float Alpha = 1.0f;
@@ -30,12 +30,12 @@ public class Image(Scene scene) : Node(scene)
         this.SetImage(frame.Texture, frame.Area, frame.Effects);
     }
 
-    public override void Draw(GameServiceContainer services, SpriteBatch spriteBatch)
+    public override void Draw()
     {
-        base.Draw(services, spriteBatch);
+        base.Draw();
         _origin = _sourceRect.HasValue ? 
             new Vector2(_sourceRect.Value.Width / 2f, _sourceRect.Value.Height / 2f) : 
             new Vector2(_texture.Width / 2f, _texture.Height / 2f);
-        spriteBatch.Draw(_texture, Transform.GlobalPosition, _sourceRect, Color * Alpha, Transform.GlobalRotation, _origin, Transform.GlobalScale, SpriteEffects.None, 0.0f);
+        Services.GetService<SpriteBatch>().Draw(_texture, Transform.GlobalPosition, _sourceRect, Color * Alpha, Transform.GlobalRotation, _origin, Transform.GlobalScale, SpriteEffects.None, 0.0f);
     }
 }

@@ -30,7 +30,7 @@ public class StateMachine<T> where T : Enum
     }
 
     /// <summary>
-    /// If <paramref name="newStateEnum"/> is different from Enables <paramref name="newStateEnum"/> and disables all other states.
+    /// If <paramref name="newStateEnum"/> differs from the current state, enables <paramref name="newStateEnum"/> and disables all other states.
     /// <paramref name="newStateEnum"/> is not guaranteed to be a part of this state machine
     /// </summary>
     /// <param name="newStateEnum"></param>

@@ -19,6 +19,7 @@ public class Node : IEnumerable<Node>
     public Transform Transform { get; internal set; }
     public string Name { get; set; }
     public string SceneName => Parent != null ? Parent.SceneName + HIERARCHY_SEPARATOR + Name : Name;
+    protected GameServiceContainer Services { get; private set; }
 
     private readonly Dictionary<Guid, Node> _children;
     public int ChildCount => _children.Count;
@@ -38,8 +39,9 @@ public class Node : IEnumerable<Node>
     /// <li>Code which is dependent on the node hierarchy should be executed in <see cref="Start"/>.</li>
     /// </ul>
     /// </summary>
-    public Node(Scene scene)
+    public Node(GameServiceContainer services, Scene scene)
     {
+        this.Services = services;
         this.Scene = scene;
         this.Name = DEFAULT_NAME;
         this.Id = Guid.NewGuid();
@@ -96,11 +98,11 @@ public class Node : IEnumerable<Node>
     /// Called when initialization is complete and the scene is starting.
     /// </summary>
     /// <param name="services"></param>
-    public virtual void Start(GameServiceContainer services)
+    public virtual void Start()
     {
         foreach (var child in this)
         {
-            child.Start(services);
+            child.Start();
         }
     }
     
@@ -109,11 +111,11 @@ public class Node : IEnumerable<Node>
     /// </summary>
     /// <param name="services"></param>
     /// <param name="spriteBatch"></param>
-    public virtual void Draw(GameServiceContainer services, SpriteBatch spriteBatch)
+    public virtual void Draw()
     {
         foreach (var child in this)
         {
-            child.Draw(services, spriteBatch);
+            child.Draw();
         }
     }
 
@@ -122,11 +124,11 @@ public class Node : IEnumerable<Node>
     /// </summary>
     /// <param name="services"></param>
     /// <param name="gameTime"></param>
-    public virtual void Update(GameServiceContainer services, GameTime gameTime)
+    public virtual void Update(GameTime gameTime)
     {
         foreach (var child in this)
         {
-            child.Update(services, gameTime);
+            child.Update(gameTime);
         }
     }
 

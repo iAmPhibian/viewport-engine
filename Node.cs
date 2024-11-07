@@ -83,13 +83,19 @@ public class Node
     public T Instantiate<T>(string name, Node parent = null) where T : Node => Scene?.Instantiate<T>(parent);
 
     public T AddChild<T>(string name) where T : Node => this.Instantiate<T>(name, this);
-    
+
     /// <summary>
     /// Called when the GameObject is drawn.
     /// </summary>
     /// <param name="services"></param>
     /// <param name="spriteBatch"></param>
-    public virtual void Draw(GameServiceContainer services, SpriteBatch spriteBatch) { }
+    public virtual void Draw(GameServiceContainer services, SpriteBatch spriteBatch)
+    {
+        foreach (var child in _children.Values)
+        {
+            child.Draw(services, spriteBatch);
+        }
+    }
 
     /// <summary>
     /// Called for every <see cref="Node"/> on every frame.

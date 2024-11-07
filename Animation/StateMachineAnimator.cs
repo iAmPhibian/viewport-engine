@@ -22,6 +22,9 @@ public class StateMachineAnimator<T> where T : Enum
         CurrentAnimation.Start(Repeat.Mode.Loop);
     }
 
+    /// <summary>
+    /// Needs to be called to update the animator state when a value used by a n 
+    /// </summary>
     public void UpdateAnimatorState()
     {
         SetAnimation(_animationGetter);

@@ -91,7 +91,6 @@ public abstract class Scene
     public virtual void Start()
     {
         Root.Start();
-        Console.WriteLine(ToString());
     }
 
     /// <summary>

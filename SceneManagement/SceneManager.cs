@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -40,6 +41,8 @@ public class SceneManager(GameServiceContainer services, Scene defaultScene, int
         CurrentScene?.UnloadContent();
         CurrentScene = scene;
         scene.LoadContent(Content);
+        Console.WriteLine("Scene loaded:");
+        scene.Root.PrintNode();
         scene.Start();
     }
 }

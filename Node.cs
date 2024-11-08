@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ViewportEngine.SceneManagement;
@@ -29,6 +31,8 @@ public class Node : IEnumerable<Node>
     /// </summary>
     public Guid Id { get; private init; }
 
+    private CancellationTokenSource _linkedTaskTokenSource;
+    
     private const string DEFAULT_NAME = "Node";
     private const char HIERARCHY_SEPARATOR = '.';
     
@@ -46,6 +50,7 @@ public class Node : IEnumerable<Node>
         this.Name = DEFAULT_NAME;
         this.Id = Guid.NewGuid();
         _children = new Dictionary<Guid, Node>();
+        _linkedTaskTokenSource = new CancellationTokenSource();
     }
 
     internal void AddChildReference(Node child)
@@ -76,6 +81,7 @@ public class Node : IEnumerable<Node>
     public virtual void OnDestroyed()
     {
         Parent?.RemoveChild(this);
+        _linkedTaskTokenSource.Cancel();
     }
     
     /// <summary>
@@ -159,7 +165,7 @@ public class Node : IEnumerable<Node>
     {
         // Print the current node with the appropriate indent
         Console.Write(indent);
-        Console.Write(isLast ? "└─ " : "├─ ");
+        Console.Write(isLast ? "\u2514" : "\u251c");
         Console.WriteLine(ToString());
 
         // Increase the indent for children nodes
@@ -172,5 +178,13 @@ public class Node : IEnumerable<Node>
             child.PrintNode(indent, i == child.ChildCount - 1);
             i++;
         }
+    }
+
+    public Task StartTask(Action<CancellationToken> action)
+    {
+        var ct = _linkedTaskTokenSource.Token;
+        var task = Task.Run(() => action(ct), _linkedTaskTokenSource.Token);
+        
+        return task;
     }
 }

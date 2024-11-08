@@ -6,6 +6,8 @@ public interface IWindowHandler
 {
     public int Width { get; }
     public int Height { get; }
+    public Point Size { get; }
+
     public Point Position { get; }
     
     void SetWindowSize(int width, int height);

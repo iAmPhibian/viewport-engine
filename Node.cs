@@ -31,7 +31,7 @@ public class Node : IEnumerable<Node>
     /// </summary>
     public Guid Id { get; private init; }
 
-    private CancellationTokenSource _linkedTaskTokenSource;
+    private readonly CancellationTokenSource _linkedTaskTokenSource;
     
     private const string DEFAULT_NAME = "Node";
     private const char HIERARCHY_SEPARATOR = '.';

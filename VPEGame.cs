@@ -13,6 +13,8 @@ public abstract class VPEGame : Game, IWindowHandler
     public int Height => Graphics.PreferredBackBufferHeight;
     public Point Size => Window.ClientBounds.Size;
     public Point Position => Window.Position;
+    public Point CenterPosition => Position + new Point(Width / 2, Height / 2);
+
 
     protected VPEGame()
     {

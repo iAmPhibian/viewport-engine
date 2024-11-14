@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Xna.Framework;
+using ViewportEngine.Util;
 
 namespace ViewportEngine.StateManagement;
 
@@ -15,11 +16,6 @@ public interface IState
     /// </summary>
     /// <returns></returns>
     public bool IsActive { get; }
-    
-    /// <summary>
-    /// Sets up the state for future usage.
-    /// </summary>
-    public void InitGame();
 
     /// <summary>
     /// Either enables or disables the state based on <paramref name="active"/>.
@@ -42,7 +38,10 @@ public interface IState
     /// Called when the state is exited.
     /// </summary>
     public void Exit();
-    
+
+    public IState GetRunningState();
+
     public event Action OnEnter;
+    public event Action<GameTime> OnUpdate;
     public event Action OnExit;
 }

@@ -10,9 +10,9 @@ public abstract class State(GameServiceContainer services, string name) : IState
 {
     public string Name { get; } = name;
     public bool IsActive { get; private set; }
-    
+
     public event Action OnEnter;
-    public event Action OnUpdate;
+    public event Action<GameTime> OnUpdate;
     public event Action OnExit;
 
     protected GameServiceContainer Services { get; private set; } = services;
@@ -37,20 +37,23 @@ public abstract class State(GameServiceContainer services, string name) : IState
         }
     }
 
-    public virtual void InitGame()
-    {
-        
-    }
-
     public virtual void Enter()
     {
         OnEnter?.Invoke();
     }
 
-    public virtual void Update(GameTime gameTime) { }
+    public virtual void Update(GameTime gameTime)
+    {
+        OnUpdate?.Invoke(gameTime);
+    }
 
     public virtual void Exit()
     {
         OnExit?.Invoke();
+    }
+    
+    public IState GetRunningState()
+    {
+        return this;
     }
 }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using ViewportEngine.SceneManagement;
 
@@ -16,22 +17,37 @@ namespace ViewportEngine;
 /// </summary>
 public class Node : IEnumerable<Node>
 {
+    /// <summary>
+    /// The Scene that this Node belongs to and resides within.
+    /// </summary>
     public Scene Scene { get; private init; }
+    /// <summary>
+    /// The parent of this Node in the <see cref="Scene"/>.
+    /// </summary>
     public Node Parent { get; private set; }
+    /// <summary>
+    /// The required Transform attached to this Node.
+    /// </summary>
     public Transform Transform { get; internal set; }
+    /// <summary>
+    /// Globally unique node id.
+    /// </summary>
+    public Guid Id { get; }
+    /// <summary>
+    /// The human-readable name of the Node.
+    /// </summary>
     public string Name { get; set; }
+    /// <summary>
+    /// The name of the Node concatenated with all of its parents.
+    /// </summary>
     public string SceneName => Parent != null ? Parent.SceneName + HIERARCHY_SEPARATOR + Name : Name;
+    /// <summary>
+    /// A reference to the Game's <see cref="GameServiceContainer"/>.
+    /// </summary>
     protected GameServiceContainer Services { get; private set; }
 
     private readonly Dictionary<Guid, Node> _children;
     public int ChildCount => _children.Count;
-    
-    /// <summary>
-    /// Globally unique node id.
-    /// </summary>
-    public Guid Id { get; private init; }
-
-    private readonly CancellationTokenSource _linkedTaskTokenSource;
     
     private const string DEFAULT_NAME = "Node";
     private const char HIERARCHY_SEPARATOR = '.';
@@ -45,19 +61,22 @@ public class Node : IEnumerable<Node>
     /// </summary>
     public Node(GameServiceContainer services, Scene scene)
     {
-        this.Services = services;
-        this.Scene = scene;
-        this.Name = DEFAULT_NAME;
-        this.Id = Guid.NewGuid();
+        Services = services;
+        Scene = scene;
+        Name = DEFAULT_NAME;
+        Id = Guid.NewGuid();
         _children = new Dictionary<Guid, Node>();
-        _linkedTaskTokenSource = new CancellationTokenSource();
     }
 
-    internal void AddChildReference(Node child)
-    {
-        _children.Add(child.Id, child);
-    }
-
+    #region NodeTree
+    /// <summary>
+    /// Instantiates a new child Node of type <typeparamref name="T"/> as a child of this Node.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public T AddChild<T>(string name) where T : Node => this.Instantiate<T>(name, this);
+    
     /// <summary>
     /// Removes <paramref name="child"/> from this Node's children.
     /// </summary>
@@ -77,12 +96,6 @@ public class Node : IEnumerable<Node>
         Parent?.RemoveChild(this);
         Parent = newParent ?? Scene.Root;
     }
-
-    public virtual void OnDestroyed()
-    {
-        Parent?.RemoveChild(this);
-        _linkedTaskTokenSource.Cancel();
-    }
     
     /// <summary>
     /// Creates a new instance of <see cref="Node"/> type <typeparamref name="T"/> within the scene this Node belongs to.
@@ -97,9 +110,22 @@ public class Node : IEnumerable<Node>
         newNode.Name = name;
         return newNode;
     }
+    #endregion
+    
+    #region Event Methods
 
-    public T AddChild<T>(string name) where T : Node => this.Instantiate<T>(name, this);
-
+    /// <summary>
+    /// Called when scene is loading assets in preparation for starting the <see cref="Scene"/>.
+    /// </summary>
+    /// <param name="content"></param>
+    public virtual void LoadContent(ContentManager content)
+    {
+        foreach (var child in this)
+        {
+            child.LoadContent(content);
+        }
+    }
+    
     /// <summary>
     /// Called when initialization is complete and the scene is starting.
     /// </summary>
@@ -124,7 +150,7 @@ public class Node : IEnumerable<Node>
             child.Draw();
         }
     }
-
+    
     /// <summary>
     /// Called for every <see cref="Node"/> on every frame.
     /// </summary>
@@ -138,6 +164,14 @@ public class Node : IEnumerable<Node>
         }
     }
 
+    public virtual void OnDestroyed()
+    {
+        Parent?.RemoveChild(this);
+    }
+    
+    #endregion
+    
+    #region IEnumerator
     public IEnumerator<Node> GetEnumerator()
     {
         return _children.Values.GetEnumerator();
@@ -148,6 +182,9 @@ public class Node : IEnumerable<Node>
         return ((IEnumerable)_children.Values).GetEnumerator();
     }
 
+    #endregion
+    
+    #region Printing
     public override string ToString()
     {
         return $"({GetType().ToString()}) {SceneName}";
@@ -179,12 +216,10 @@ public class Node : IEnumerable<Node>
             i++;
         }
     }
-
-    public Task StartTask(Action<CancellationToken> action)
+    #endregion
+    
+    internal void AddChildReference(Node child)
     {
-        var ct = _linkedTaskTokenSource.Token;
-        var task = Task.Run(() => action(ct), _linkedTaskTokenSource.Token);
-        
-        return task;
+        _children.Add(child.Id, child);
     }
 }

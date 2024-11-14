@@ -75,9 +75,22 @@ public abstract class Scene
     /// Loads the content within the scene.
     /// </summary>
     /// <param name="content"></param>
-    public virtual void LoadContent(ContentManager content)
+    internal void LoadContent(ContentManager content)
     {
         _content = new ContentManager(content.ServiceProvider, SCENE_DIRECTORY);
+        // Nodes are created
+        Initialize(content);
+        // Nodes individually load their assets
+        Root.LoadContent(content);
+    }
+
+    /// <summary>
+    /// Overrideable method used for Node instantiation.
+    /// </summary>
+    /// <param name="content"></param>
+    public virtual void Initialize(ContentManager content)
+    {
+        
     }
 
     /// <summary>

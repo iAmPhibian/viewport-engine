@@ -12,7 +12,7 @@ public class StateMachine<T> where T : Enum
 {
     private readonly Dictionary<T, IState> _managedStates;
     public T StateMode { get; private set; }
-    public IState ActiveState { get; private set; }
+    private IState _activeState;
     
     /// <summary>
     /// Creates a new <see cref="StateMachine{T}"/> which manages <paramref name="states"></paramref> and defaults to <paramref name="defaultState"/>.
@@ -22,10 +22,6 @@ public class StateMachine<T> where T : Enum
     public StateMachine(Dictionary<T, IState> states, T defaultState)
     {
         _managedStates = states;
-        foreach (var state in _managedStates)
-        {
-            state.Value.InitGame();
-        }
         SetActiveState(defaultState);
     }
 
@@ -40,7 +36,7 @@ public class StateMachine<T> where T : Enum
         if (newStateEnum.Equals(StateMode)) return;
         
         // Disable current state if it exists
-        ActiveState?.SetActive(false);
+        _activeState?.SetActive(false);
         // Update enum mode
         StateMode = newStateEnum;
         var newStateRef = GetState(newStateEnum);
@@ -51,7 +47,7 @@ public class StateMachine<T> where T : Enum
             state.Value.SetActive(state.Key.Equals(StateMode));
         }
         
-        ActiveState = newStateRef;
+        _activeState = newStateRef;
     }
 
     /// <summary>
@@ -78,12 +74,12 @@ public class StateMachine<T> where T : Enum
     /// <returns></returns>
     public IState GetActiveState()
     {
-        return ActiveState;
+        return _activeState;
     }
     
     public void UpdateMachine(GameTime gameTime)
     {
         // Update active state if it exists
-        ActiveState?.Update(gameTime);
+        _activeState?.Update(gameTime);
     }
 }

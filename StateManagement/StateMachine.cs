@@ -10,6 +10,8 @@ namespace ViewportEngine.StateManagement;
 /// </summary>
 public class StateMachine<T> where T : Enum
 {
+    // TODO: Use T as an int index and create an array based off the size of T as an enum
+    // - To take advantage of cache
     private readonly Dictionary<T, IState> _managedStates;
     public T StateMode { get; private set; }
     private IState _activeState;
@@ -22,7 +24,7 @@ public class StateMachine<T> where T : Enum
     public StateMachine(Dictionary<T, IState> states, T defaultState)
     {
         _managedStates = states;
-        SetActiveState(defaultState);
+        UpdateStateTo(defaultState);
     }
 
     /// <summary>
@@ -35,19 +37,19 @@ public class StateMachine<T> where T : Enum
         // Same as current state: return
         if (newStateEnum.Equals(StateMode)) return;
         
-        // Disable current state if it exists
-        _activeState?.SetActive(false);
-        // Update enum mode
-        StateMode = newStateEnum;
-        var newStateRef = GetState(newStateEnum);
-
-        // Enable newState, disable every other state
-        foreach (var state in _managedStates)
-        {
-            state.Value.SetActive(state.Key.Equals(StateMode));
-        }
+        Console.WriteLine($"Setting active state to {newStateEnum}");
         
-        _activeState = newStateRef;
+        // Enable newState, disable active state
+        UpdateStateTo(newStateEnum);
+    }
+
+    private void UpdateStateTo(T newState)
+    {
+        _activeState?.SetActive(false);
+        var shapeRef = _managedStates[newState];
+        shapeRef.SetActive(true);
+        _activeState = shapeRef;
+        StateMode = newState;
     }
 
     /// <summary>
@@ -56,7 +58,7 @@ public class StateMachine<T> where T : Enum
     /// <param name="state"></param>
     /// <returns></returns>
     /// <exception cref="KeyNotFoundException"></exception>
-    public IState GetState(T state)
+    public IState GetStateFor(T state)
     {
         try
         {
@@ -74,9 +76,19 @@ public class StateMachine<T> where T : Enum
     /// <returns></returns>
     public IState GetActiveState()
     {
-        return _activeState;
+        return GetRunningStateBehavior(_activeState);
     }
-    
+
+    private static IState GetRunningStateBehavior(IState state)
+    {
+        while (true)
+        {
+            var runningState = state.GetRunningState();
+            if (state.Equals(runningState)) return state;
+            state = runningState;
+        }
+    }
+
     public void UpdateMachine(GameTime gameTime)
     {
         // Update active state if it exists

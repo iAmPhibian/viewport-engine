@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using ViewportEngine.Util;
 
@@ -8,10 +10,9 @@ namespace ViewportEngine.StateManagement;
 /// Used as a multi-state. Blends between four states based on the sign of x and y values (set using <see cref="SetBlend"/>).
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class StateBlender2D<T> : IState where T : IState
+public class StateBlender2D<T> : State, IEnumerable<T> where T : IState
 {
-    public string Name { get; }
-    public bool IsActive { get; private set; }
+    public new T RunningState => _activeState;
     /// <summary>
     /// The state for (-1.0, 0.0), (-1.0, 1.0), and (-1.0, -1.0).
     /// </summary>
@@ -29,22 +30,18 @@ public class StateBlender2D<T> : IState where T : IState
     /// </summary>
     public T Down { get; set; }
 
-    private T _active;
+    private T _activeState;
 
-    public StateBlender2D(GameServiceContainer services, string name)
+    public StateBlender2D(GameServiceContainer services, string name) : base(services, name)
     {
-        Name = name;
-        
         Left = (T)Activator.CreateInstance(typeof(T), services, $"{typeof(T).Name}Left");
         Right = (T)Activator.CreateInstance(typeof(T), services, $"{typeof(T).Name}Right");
         Up = (T)Activator.CreateInstance(typeof(T), services, $"{typeof(T).Name}Up");
         Down = (T)Activator.CreateInstance(typeof(T), services, $"{typeof(T).Name}Down");
-
-        _active = Down;
     }
 
     /// <summary>
-    /// Sets the current animation based on the vector represented by <paramref name="x"/> and <paramref name="y"/>.
+    /// Sets the currently active substate based on the vector represented by <paramref name="x"/> and <paramref name="y"/>.
     /// Note: x gains precedence over y.
     /// </summary>
     /// <param name="x"></param>
@@ -66,49 +63,55 @@ public class StateBlender2D<T> : IState where T : IState
             newActive = x > 0 ? Right : Left;
         }
 
-        if (newActive.Equals(_active)) return;
-        
-        _active?.Exit();
-        newActive?.Enter();
-        _active = newActive;
+        if (newActive.Equals(_activeState)) return;
+
+        SetActiveSubState(newActive);
     }
+
+    private void SetActiveSubState(T state)
+    {
+        _activeState?.Exit();
+        _activeState = state;
+        Left.SetActive(state.Equals(Left));
+        Up.SetActive(state.Equals(Up));
+        Down.SetActive(state.Equals(Down));
+        Right.SetActive(state.Equals(Right));
+        _activeState?.Enter();
+    }
+
+    public override void Enter()
+    {
+        base.Enter();
+        var defaultState = _activeState;
+        _activeState = default(T);
+        SetActiveSubState(defaultState);
+    }
+
+    public override void Update(GameTime gameTime)
+    {
+        base.Update(gameTime);
+        _activeState.Update(gameTime);
+    }
+
+    public override IState GetRunningState()
+    {
+        return _activeState;
+    }
+
+    public T GetRunningStateGeneric() => (T)_activeState.GetRunningState();
     
-    public void SetActive(bool active)
-    {
-        Left.SetActive(active);
-        Up.SetActive(active);
-        Down.SetActive(active);
-        Right.SetActive(active);
-        IsActive = active;
-    }
-
-    public void Enter()
-    {
-        _active.Enter();
-        
-        OnEnter?.Invoke();
-    }
-
-    public void Update(GameTime gameTime)
-    {
-        _active.Update(gameTime);
-        
-        OnUpdate?.Invoke(gameTime);
-    }
-
-    public void Exit()
-    {
-        _active.Exit();
-        
-        OnExit?.Invoke();
-    }
-
-    public IState GetRunningState()
-    {
-        return _active.GetRunningState();
-    }
-
     public event Action OnEnter;
     public event Action<GameTime> OnUpdate;
     public event Action OnExit;
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        var directions = new List<T> { Left, Right, Up, Down };
+        return directions.GetEnumerator();
+    }
+    
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 }

@@ -21,26 +21,13 @@ public class StateMachineAnimator<T> where T : Enum
         CurrentAnimation.Reset();
         CurrentAnimation.Start(Repeat.Mode.Loop);
     }
-
-    /// <summary>
-    /// Needs to be called to update the animator state when a value used by a n 
-    /// </summary>
-    public void UpdateAnimatorState()
-    {
-        SetAnimation(_animationGetter);
-    }
     
-    public StateMachineAnimator(StateMachine<T> stateMachine, Dictionary<T, Func<Spritesheet.Animation>> stateLinks)
+    public StateMachineAnimator(StateMachine<T> stateMachine, Dictionary<IState, Func<Spritesheet.Animation>> stateLinks)
     {
+        // Add listeners to all state OnEnter events to set their animations upon entry
         foreach (var pair in stateLinks)
         {
-            // If this pair represents the active state
-            if (pair.Key.Equals(stateMachine.StateMode))
-            {
-                SetAnimation(pair.Value);
-            }
-
-            stateMachine.GetState(pair.Key).OnEnter += () => SetAnimation(pair.Value);
+            pair.Key.OnEnter += () => SetAnimation(pair.Value);
         }
     }
 

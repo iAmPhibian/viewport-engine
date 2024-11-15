@@ -12,9 +12,8 @@ public abstract class Scene
 {
     public Node Root { get; }
     public GameServiceContainer Services { get; }
+    protected abstract string LoadSubDirectoryPath { get; }
     protected ContentManager _content;
-    
-    private const string SCENE_DIRECTORY = "Content/Scenes";
 
     protected Scene(GameServiceContainer services)
     {
@@ -77,21 +76,18 @@ public abstract class Scene
     /// <param name="content"></param>
     internal void LoadContent(ContentManager content)
     {
-        _content = new ContentManager(content.ServiceProvider, SCENE_DIRECTORY);
+        _content = new ContentManager(content.ServiceProvider, content.RootDirectory);
         // Nodes are created
         Initialize(content);
         // Nodes individually load their assets
         Root.LoadContent(content);
     }
-
+    
     /// <summary>
-    /// Overrideable method used for Node instantiation.
+    /// Overrideable method used for <see cref="ContentManager"/> initialization and <see cref="Node"/> instantiation.
     /// </summary>
     /// <param name="content"></param>
-    public virtual void Initialize(ContentManager content)
-    {
-        
-    }
+    public virtual void Initialize(ContentManager content) { }
 
     /// <summary>
     /// Unloads the content within the scene.

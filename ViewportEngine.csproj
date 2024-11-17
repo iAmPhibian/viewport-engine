@@ -6,6 +6,7 @@
     <TieredCompilation>false</TieredCompilation>
   </PropertyGroup>
   <PropertyGroup>
+    <MonoGameExtendedPipelineReferencePath>$(MSBuildThisFileDirectory)pipeline-references</MonoGameExtendedPipelineReferencePath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="4.0.0" />

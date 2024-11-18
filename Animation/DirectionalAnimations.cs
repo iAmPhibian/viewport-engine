@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Spritesheet;
+using ViewportEngine.Util;
 using ViewportGame;
 using ViewportGame.Util;
 
@@ -10,7 +11,10 @@ namespace ViewportEngine.Animation;
 /// </summary>
 public class DirectionalAnimations
 {
-    private Spritesheet.Animation _down, _right, _up, _left;
+    public Spritesheet.Animation Down { get; private set; }
+    public Spritesheet.Animation Right { get; private set; }
+    public Spritesheet.Animation Up { get; private set; }
+    public Spritesheet.Animation Left { get; private set; }
 
     /// <summary>
     /// Sets the directional animation specified by <paramref name="direction"/> to <paramref name="anim"/>.
@@ -22,17 +26,17 @@ public class DirectionalAnimations
         switch (direction)
         {
             case Direction4.Down:
-                _down = anim;
+                Down = anim;
                 break;
             case Direction4.Right:
-                _right = anim;
+                Right = anim;
                 break;
             case Direction4.Up:
-                _up = anim;
+                Up = anim;
                 break;
             case Direction4.Left:
             default:
-                _left = anim;
+                Left = anim;
                 break;
         }
     }
@@ -47,14 +51,14 @@ public class DirectionalAnimations
         switch (direction)
         {
             case Direction4.Down:
-                return _down;
+                return Down;
             case Direction4.Right:
-                return _right;
+                return Right;
             case Direction4.Up:
-                return _up;
+                return Up;
             case Direction4.Left:
             default:
-                return _left;
+                return Left;
         }
     }
 

@@ -29,6 +29,8 @@ public class StateBlender2D<T> : State, IEnumerable<T> where T : IState
     /// The state for (0.0, -1.0).
     /// </summary>
     public T Down { get; set; }
+    
+    public Vector2 Blend { get; private set; }
 
     private T _activeState;
 
@@ -48,6 +50,7 @@ public class StateBlender2D<T> : State, IEnumerable<T> where T : IState
     /// <param name="y"></param>
     public void SetBlend(float x, float y)
     {
+        // decide real x and y directions
         bool isXZero = x.IsWithinEpsilon();
         bool isYZero = y.IsWithinEpsilon();
         
@@ -65,6 +68,7 @@ public class StateBlender2D<T> : State, IEnumerable<T> where T : IState
 
         if (newActive.Equals(_activeState)) return;
 
+        Blend = new Vector2(x, y);
         SetActiveSubState(newActive);
     }
 
@@ -113,5 +117,10 @@ public class StateBlender2D<T> : State, IEnumerable<T> where T : IState
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+    
+    public override string ToString()
+    {
+        return $"(State \"{Name}\", {IsActive}, Blend={Blend.X},{Blend.Y})";
     }
 }

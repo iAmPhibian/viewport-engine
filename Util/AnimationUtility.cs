@@ -19,24 +19,4 @@ public static class AnimationUtility
             { stateBlender.Down, () => animations.GetDirectionalAnimation(Direction4.Down) },
         };
     }
-    
-    /// <summary>
-    /// Returns a <see cref="Direction4"/> animation direction given <paramref name="vecDirection"/>.
-    /// </summary>
-    /// <param name="vecDirection"></param>
-    /// <returns></returns>
-    public static Direction4 GetAnimationDirection(Vector2 vecDirection)
-    {
-        return vecDirection.X switch
-        {
-            > 0f => Direction4.Right,
-            < 0f => Direction4.Left,
-            _ => vecDirection.Y switch
-            {
-                < 0f => Direction4.Up,
-                > 0f => Direction4.Down,
-                _ => Direction4.Down
-            }
-        };
-    }
 }

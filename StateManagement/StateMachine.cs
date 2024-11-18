@@ -15,16 +15,18 @@ public class StateMachine<T> where T : Enum
     private readonly Dictionary<T, IState> _managedStates;
     public T StateMode { get; private set; }
     private IState _activeState;
+
+    public event Action<IState> OnStateChangedTo;
     
     /// <summary>
-    /// Creates a new <see cref="StateMachine{T}"/> which manages <paramref name="states"></paramref> and defaults to <paramref name="defaultState"/>.
+    /// Creates a new <see cref="StateMachine{T}"/> which manages <paramref name="states"></paramref> and defaults to <paramref name="defaultStateEnum"/>.
     /// </summary>
     /// <param name="states"></param>
-    /// <param name="defaultState"></param>
-    public StateMachine(Dictionary<T, IState> states, T defaultState)
+    /// <param name="defaultStateEnum"></param>
+    internal StateMachine(Dictionary<T, IState> states, T defaultStateEnum)
     {
         _managedStates = states;
-        UpdateStateTo(defaultState);
+        UpdateStateTo(defaultStateEnum);
     }
 
     /// <summary>
@@ -34,11 +36,11 @@ public class StateMachine<T> where T : Enum
     /// <param name="newStateEnum"></param>
     public void SetActiveState(T newStateEnum)
     {
-        // Same as current state: return
-        if (newStateEnum.Equals(StateMode)) return;
-        
-        Console.WriteLine($"Setting active state to {newStateEnum}");
-        
+        // Same as current state (taking into account substates): return
+        var runningStateBehavior = GetRunningStateBehavior();
+        var newState = GetStateFor(newStateEnum);
+        if (newStateEnum.Equals(StateMode) && newState.GetRunningState() == runningStateBehavior) return;
+
         // Enable newState, disable active state
         UpdateStateTo(newStateEnum);
     }
@@ -46,10 +48,11 @@ public class StateMachine<T> where T : Enum
     private void UpdateStateTo(T newState)
     {
         _activeState?.SetActive(false);
-        var shapeRef = _managedStates[newState];
-        shapeRef.SetActive(true);
-        _activeState = shapeRef;
+        var baseState = GetStateFor(newState);
+        baseState.SetActive(true);
+        _activeState = baseState.GetRunningState();
         StateMode = newState;
+        OnStateChangedTo?.Invoke(baseState.GetRunningState());
     }
 
     /// <summary>
@@ -76,11 +79,12 @@ public class StateMachine<T> where T : Enum
     /// <returns></returns>
     public IState GetActiveState()
     {
-        return GetRunningStateBehavior(_activeState);
+        return _activeState;
     }
 
-    private static IState GetRunningStateBehavior(IState state)
+    public IState GetRunningStateBehavior()
     {
+        var state = _activeState;
         while (true)
         {
             var runningState = state.GetRunningState();

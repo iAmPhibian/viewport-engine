@@ -12,23 +12,31 @@ namespace ViewportEngine.Animation;
 public class StateMachineAnimator<T> where T : Enum
 {
     public Spritesheet.Animation CurrentAnimation { get; private set; }
-    private Func<Spritesheet.Animation> _animationGetter;
 
+    private Dictionary<IState, Func<Spritesheet.Animation>> _stateAnimationLinks;
+
+    internal StateMachineAnimator(StateMachine<T> stateMachine, Dictionary<IState, Func<Spritesheet.Animation>> stateLinks)
+    {
+        _stateAnimationLinks = stateLinks;
+        stateMachine.OnStateChangedTo += OnStateChangedTo;
+        SetAnimation(_stateAnimationLinks[stateMachine.GetRunningStateBehavior()]);
+    }
+    
     private void SetAnimation(Func<Spritesheet.Animation> animationGetter)
     {
-        _animationGetter = animationGetter;
         CurrentAnimation = animationGetter.Invoke();
         CurrentAnimation.Reset();
         CurrentAnimation.Start(Repeat.Mode.Loop);
     }
-    
-    public StateMachineAnimator(StateMachine<T> stateMachine, Dictionary<IState, Func<Spritesheet.Animation>> stateLinks)
+
+    public void OnStateChangedTo(IState newState)
     {
-        // Add listeners to all state OnEnter events to set their animations upon entry
-        foreach (var pair in stateLinks)
+        if (!_stateAnimationLinks.TryGetValue(newState, out var animFunc))
         {
-            pair.Key.OnEnter += () => SetAnimation(pair.Value);
+            throw new Exception($"Cannot find state '{newState}' in state machine animator");
         }
+
+        SetAnimation(animFunc);
     }
 
     public void Update(GameTime gameTime)

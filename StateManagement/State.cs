@@ -9,16 +9,12 @@ namespace ViewportEngine.StateManagement;
 public abstract class State(GameServiceContainer services, string name) : IState
 {
     public string Name { get; } = name;
-    public bool IsActive { get; private set; }
+    public bool IsActive { get; set; }
 
     public virtual IState GetRunningState()
     {
         return this;
     }
-
-    public event Action OnEnter;
-    public event Action<GameTime> OnUpdate;
-    public event Action OnExit;
 
     protected GameServiceContainer Services { get; private set; } = services;
 
@@ -41,18 +37,7 @@ public abstract class State(GameServiceContainer services, string name) : IState
         }
     }
 
-    public virtual void Enter()
-    {
-        OnEnter?.Invoke();
-    }
-
-    public virtual void Update(GameTime gameTime)
-    {
-        OnUpdate?.Invoke(gameTime);
-    }
-
-    public virtual void Exit()
-    {
-        OnExit?.Invoke();
-    }
+    protected abstract void Enter();
+    public abstract void Update(GameTime gameTime);
+    protected abstract void Exit();
 }

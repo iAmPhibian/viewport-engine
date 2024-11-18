@@ -9,6 +9,9 @@ namespace ViewportEngine.StateManagement;
 /// </summary>
 public interface IState
 {
+    /// <summary>
+    /// The human-readable name of this state.
+    /// </summary>
     public string Name { get; }
     
     /// <summary>
@@ -18,30 +21,20 @@ public interface IState
     public bool IsActive { get; }
 
     /// <summary>
-    /// Either enables or disables the state based on <paramref name="active"/>.
+    /// Either enters or exits the state based on <paramref name="active"/>.
     /// </summary>
     /// <param name="active"></param>
-    public void SetActive(bool active);
-    
-    /// <summary>
-    /// Called when the state is entered.
-    /// </summary>
-    public void Enter();
+    internal void SetActive(bool active);
         
     /// <summary>
     /// Called every frame while the state is active.
     /// </summary>
     /// <param name="gameTime"></param>
-    public void Update(GameTime gameTime);
-        
+    internal void Update(GameTime gameTime);
+
     /// <summary>
-    /// Called when the state is exited.
+    /// Returns the running state of this state. Should only be used when <see cref="IsActive"/> == true.
     /// </summary>
-    public void Exit();
-
+    /// <returns>this, or <see cref="IState"/> representing a substate of this state</returns>
     public IState GetRunningState();
-
-    public event Action OnEnter;
-    public event Action<GameTime> OnUpdate;
-    public event Action OnExit;
 }

@@ -1,4 +1,4 @@
-namespace ViewportGame;
+namespace ViewportEngine.Util;
 
 public enum Direction4
 {

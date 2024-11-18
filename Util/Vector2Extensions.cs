@@ -16,4 +16,25 @@ public static class Vector2Extensions
         diffVec.Normalize();
         return diffVec;
     }
+    
+    
+    /// <summary>
+    /// Returns a <see cref="Direction4"/> direction given <paramref name="vecDirection"/>.
+    /// </summary>
+    /// <param name="vecDirection"></param>
+    /// <returns></returns>
+    public static Direction4 ToDirection4(this Vector2 vecDirection)
+    {
+        return vecDirection.X switch
+        {
+            > 0f => Direction4.Right,
+            < 0f => Direction4.Left,
+            _ => vecDirection.Y switch
+            {
+                < 0f => Direction4.Up,
+                > 0f => Direction4.Down,
+                _ => Direction4.Down
+            }
+        };
+    }
 }

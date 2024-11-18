@@ -115,9 +115,7 @@ public abstract class Scene
     /// <summary>
     /// Used for drawing content to the screen.
     /// </summary>
-    public abstract void Draw();
-
-    protected void RenderGameObjects()
+    public virtual void Draw()
     {
         Root.Draw();
     }

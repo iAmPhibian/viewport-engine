@@ -36,6 +36,7 @@ public class Image(GameServiceContainer services, Scene scene) : Node(services, 
         _origin = _sourceRect.HasValue ? 
             new Vector2(_sourceRect.Value.Width / 2f, _sourceRect.Value.Height / 2f) : 
             new Vector2(_texture.Width / 2f, _texture.Height / 2f);
-        Services.GetService<SpriteBatch>().Draw(_texture, Transform.GlobalPosition, _sourceRect, Color * Alpha, Transform.GlobalRotation, _origin, Transform.GlobalScale, SpriteEffects.None, 0.0f);
+        var sb = Services.GetService<SpriteBatch>();
+        sb.Draw(_texture, Transform.GlobalPosition, _sourceRect, Color * Alpha, Transform.GlobalRotation, _origin, Transform.GlobalScale, SpriteEffects.None, 0.0f);
     }
 }

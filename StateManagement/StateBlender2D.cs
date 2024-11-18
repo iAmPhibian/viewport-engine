@@ -40,6 +40,8 @@ public class StateBlender2D<T> : State, IEnumerable<T> where T : IState
         Right = (T)Activator.CreateInstance(typeof(T), services, $"{typeof(T).Name}Right");
         Up = (T)Activator.CreateInstance(typeof(T), services, $"{typeof(T).Name}Up");
         Down = (T)Activator.CreateInstance(typeof(T), services, $"{typeof(T).Name}Down");
+
+        SetBlend(0f, -1f);
     }
 
     /// <summary>
@@ -59,7 +61,7 @@ public class StateBlender2D<T> : State, IEnumerable<T> where T : IState
         T newActive;
         if (isXZero)
         {
-            newActive = y > 0 ? Up : Down;
+            newActive = y > 0 ? Down : Up;
         }
         else
         {
@@ -74,39 +76,36 @@ public class StateBlender2D<T> : State, IEnumerable<T> where T : IState
 
     private void SetActiveSubState(T state)
     {
-        _activeState?.Exit();
+        _activeState?.SetActive(false);
         _activeState = state;
-        Left.SetActive(state.Equals(Left));
-        Up.SetActive(state.Equals(Up));
-        Down.SetActive(state.Equals(Down));
-        Right.SetActive(state.Equals(Right));
-        _activeState?.Enter();
+        foreach (var dir in (T[]) [Left, Up, Down, Right])
+        {
+            // not being set active because already in this state
+            dir.SetActive(state.Equals(dir));
+        }
     }
 
-    public override void Enter()
+    protected override void Enter()
     {
-        base.Enter();
-        var defaultState = _activeState;
-        _activeState = default(T);
-        SetActiveSubState(defaultState);
+        SetBlend(Blend.X, Blend.Y);
+    }
+
+    protected override void Exit()
+    {
+        
     }
 
     public override void Update(GameTime gameTime)
     {
-        base.Update(gameTime);
         _activeState.Update(gameTime);
     }
 
     public override IState GetRunningState()
     {
-        return _activeState;
+        return _activeState.GetRunningState();
     }
 
-    public T GetRunningStateGeneric() => (T)_activeState.GetRunningState();
-    
-    public event Action OnEnter;
-    public event Action<GameTime> OnUpdate;
-    public event Action OnExit;
+    public T GetRunningStateGeneric() => (T)GetRunningState();
 
     public IEnumerator<T> GetEnumerator()
     {

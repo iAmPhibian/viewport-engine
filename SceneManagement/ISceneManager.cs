@@ -8,7 +8,6 @@ public interface ISceneManager
 {
     public ContentManager Content { get; }
     public GraphicsDevice GraphicsDevice { set; get; }
-    public Vector2 Dimensions { get; }
     public Scene CurrentScene { get; }
 
     /// <summary>

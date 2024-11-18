@@ -6,12 +6,11 @@ using ViewportEngine.Util;
 
 namespace ViewportEngine.SceneManagement;
 
-public class SceneManager(GameServiceContainer services, Scene defaultScene, int defaultWidth, int defaultHeight) : ISceneManager
+public class SceneManager(GameServiceContainer services, Scene defaultScene) : ISceneManager
 {
     // Interface
     public ContentManager Content { get; private set; }
     public GraphicsDevice GraphicsDevice { get; set; }
-    public Vector2 Dimensions { get; private set; } = new(defaultWidth, defaultHeight);
     public Scene CurrentScene { get; private set; }
 
     private GameServiceContainer Services { get; } = services;

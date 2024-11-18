@@ -13,4 +13,6 @@ public interface IWindowHandler
     
     void SetWindowSize(int width, int height);
     void SetWindowPosition(int x, int y);
+
+    public void SetRenderScale(int multiplier);
 }

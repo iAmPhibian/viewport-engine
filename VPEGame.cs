@@ -45,4 +45,10 @@ public abstract class VPEGame : Game, IWindowHandler
     {
         Window.Position = new Point(x, y);
     }
+
+    public void SetRenderScale(int multiplier)
+    {
+        var newSize = Dimensions * multiplier;
+        SetWindowSize((int)newSize.X, (int)newSize.Y);
+    }
 }

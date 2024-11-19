@@ -4,7 +4,7 @@ A framework in C# for building 2D video games. It is built upon MonoGame in C# u
 
 # ECS
 
-Viewport Engine uses a currently recursive (unoptimized) ECS in which Entities (Nodes) contain at most 1 parent and any number of child nodes. This is sufficient for my current needs, but I will likely add a module to the framework containing a SceneManager with a data-oriented implementation of an ECS that utilizes CPU caching and includes support for Systems as well as Nodes. It will be optionally usable as a service over the existing Node-based SceneManager implementation.
+Viewport Engine uses a currently recursive scene structure (unoptimized) in which Entities (Nodes) contain at most 1 parent and any number of child nodes. This is sufficient for my current needs, and is akin to GameObjects in Unity. If you would prefer a standard ECS, MonoGame.Extended is included in Viewport Engine and can be used in place of my Node system fairly easily, while retaining access to all of the 2D helper/utility scripts included in the project.
 
 # Creating a Game
 

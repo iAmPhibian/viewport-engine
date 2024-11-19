@@ -4,7 +4,7 @@ A framework in C# for building 2D video games. It is built upon MonoGame in C# u
 
 # ECS
 
-Viewport Engine uses a currently recursive (unoptimized) ECS. This is sufficient for my current needs, but I will likely replace it with an implementation that utilizes CPU caching and includes support for Systems as well as Nodes.
+Viewport Engine uses a currently recursive (unoptimized) ECS in which Entities (Nodes) contain at most 1 parent and any number of child nodes. This is sufficient for my current needs, but I will likely replace it with a data-oriented implementation that utilizes CPU caching and includes support for Systems as well as Nodes.
 
 # Creating a Game
 
